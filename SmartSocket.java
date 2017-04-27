@@ -5,15 +5,22 @@ import java.util.HashMap;
 public class SmartSocket extends Thread {
     public HashMap<Object, Object> objects = new HashMap<>();
     private Socket socket;
-    private String ip;
+    private String ip = null;
     private int port;
     private int bytesToSeparate;
     private SmartSocketCallback callback;
     public final int BLOCK = 1000000;
 
-    SmartSocket(String ip, int port, int bytesToSeparate, SmartSocketCallback callback) {
+    public SmartSocket(String ip, int port, int bytesToSeparate, SmartSocketCallback callback) {
         this.ip = ip;
         this.port = port;
+        this.bytesToSeparate = bytesToSeparate;
+        this.callback = callback;
+        this.start();
+    }
+    
+    public SmartSocket(Socket socket, int bytesToSeparate, SmartSocketCallback callback) {
+        this.socket = socket;
         this.bytesToSeparate = bytesToSeparate;
         this.callback = callback;
         this.start();
@@ -22,7 +29,7 @@ public class SmartSocket extends Thread {
     @Override
     public void run() {
         try {
-            this.socket = new Socket(this.ip, this.port);
+            if (this.ip != null) this.socket = new Socket(this.ip, this.port);
             this.callback.onInitSuccess(this);
             while (socket != null) {
                 byte[] totalInput = new byte[0];
@@ -65,7 +72,7 @@ public class SmartSocket extends Thread {
         this.socket.getOutputStream().flush();
     }
 
-    interface SmartSocketCallback {
+    public interface SmartSocketCallback {
         void onFail(SmartSocket socket, Exception e);
 
         void onInitSuccess(SmartSocket socket);
