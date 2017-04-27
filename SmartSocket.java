@@ -23,7 +23,7 @@ public class SmartSocket extends Thread {
     public void run() {
         try {
             this.socket = new Socket(this.ip, this.port);
-            this.callback.onInitSuccess();
+            this.callback.onInitSuccess(this);
             while (socket != null) {
                 byte[] totalInput = new byte[0];
                 boolean newDataWasFound = false;
@@ -49,12 +49,12 @@ public class SmartSocket extends Thread {
                     System.arraycopy(totalInput, 0, info, 0, info.length);
                     byte[] data = new byte[totalInput.length - info.length];
                     System.arraycopy(totalInput, info.length, data, 0, data.length);
-                    this.callback.onNewData(info, data);
+                    this.callback.onNewData(this, info, data);
                 }
             }
         } catch (Exception e) {
             this.socket = null;
-            this.callback.onFail(e);
+            this.callback.onFail(this, e);
             this.interrupt();
         }
     }
@@ -66,10 +66,10 @@ public class SmartSocket extends Thread {
     }
 
     interface SmartSocketCallback {
-        void onFail(Exception e);
+        void onFail(SmartSocket socket, Exception e);
 
-        void onInitSuccess();
+        void onInitSuccess(SmartSocket socket);
 
-        void onNewData(byte[] info, byte[] data);
+        void onNewData(SmartSocket socket, byte[] info, byte[] data);
     }
 }
