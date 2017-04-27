@@ -18,12 +18,22 @@ public class SmartSocket extends Thread {
         this.callback = callback;
         this.start();
     }
-    
+
     public SmartSocket(Socket socket, int bytesToSeparate, SmartSocketCallback callback) {
         this.socket = socket;
         this.bytesToSeparate = bytesToSeparate;
         this.callback = callback;
         this.start();
+    }
+
+    public void suicide() {
+        try {
+            if (this.socket != null) this.socket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        this.socket = null;
+        this.interrupt();
     }
 
     @Override
