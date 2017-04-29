@@ -7,23 +7,58 @@ public class SmartSocket extends Thread {
     private Socket socket;
     private String ip = null;
     private int port;
-    private int bytesToSeparate;
     private SmartSocketCallback callback;
     public final int BLOCK = 1000000;
 
-    public SmartSocket(String ip, int port, int bytesToSeparate, SmartSocketCallback callback) {
+    public SmartSocket(String ip, int port, SmartSocketCallback callback) {
         this.ip = ip;
         this.port = port;
-        this.bytesToSeparate = bytesToSeparate;
         this.callback = callback;
         this.start();
     }
 
-    public SmartSocket(Socket socket, int bytesToSeparate, SmartSocketCallback callback) {
+    public SmartSocket(Socket socket, SmartSocketCallback callback) {
         this.socket = socket;
-        this.bytesToSeparate = bytesToSeparate;
         this.callback = callback;
         this.start();
+    }
+
+    @Override
+    public void run() {
+        try {
+            if (this.ip != null) {
+                this.socket = new Socket(this.ip, this.port);
+                this.callback.onInitSuccess(this);
+            }
+            while (socket != null) {
+                byte[] data = new byte[1];
+
+                { //This is to prevent unwanted CPU use
+                    int currByte = this.socket.getInputStream().read();
+                    if (currByte < 0) throw new Exception("Connection closed");
+                    data[0] = (byte) currByte;
+                }
+
+                while (socket.getInputStream().available() > 0) {
+                    byte[] tempHolder = new byte[BLOCK];
+                    int bytesRead = socket.getInputStream().read(tempHolder);
+                    if (bytesRead < 0) throw new Exception("Connection closed: " + bytesRead);
+
+                    byte[] tempCopy = new byte[data.length + bytesRead];
+                    System.arraycopy(data, 0, tempCopy, 0, data.length);
+                    System.arraycopy(tempHolder, 0, tempCopy, data.length, bytesRead);
+
+                    data = new byte[tempCopy.length];
+                    System.arraycopy(tempCopy, 0, data, 0, data.length);
+                }
+
+                this.callback.onNewData(this, data);
+            }
+            throw new Exception ("Socket was destroyed");
+        } catch (Exception e) {
+            this.suicide();
+            this.callback.onFail(this, e);
+        }
     }
 
     public void suicide() {
@@ -36,57 +71,39 @@ public class SmartSocket extends Thread {
         this.interrupt();
     }
 
-    @Override
-    public void run() {
-        try {
-            if (this.ip != null) this.socket = new Socket(this.ip, this.port);
-            this.callback.onInitSuccess(this);
-            while (socket != null) {
-                byte[] totalInput = new byte[0];
-                boolean newDataWasFound = false;
-
-                while (socket.getInputStream().available() > 0) {
-                    byte[] tempHolder = new byte[BLOCK];
-                    int bytesRead = socket.getInputStream().read(tempHolder);
-                    if (bytesRead < 0) {
-                        throw new Exception("Connection closed: " + bytesRead);
-                    }
-
-                    byte[] tempCopy = new byte[totalInput.length + bytesRead];
-                    System.arraycopy(totalInput, 0, tempCopy, 0, totalInput.length);
-                    System.arraycopy(tempHolder, 0, tempCopy, totalInput.length, bytesRead);
-
-                    totalInput = new byte[tempCopy.length];
-                    System.arraycopy(tempCopy, 0, totalInput, 0, totalInput.length);
-                    newDataWasFound = true;
-                }
-
-                if (newDataWasFound) {
-                    byte[] info = new byte[this.bytesToSeparate];
-                    System.arraycopy(totalInput, 0, info, 0, info.length);
-                    byte[] data = new byte[totalInput.length - info.length];
-                    System.arraycopy(totalInput, info.length, data, 0, data.length);
-                    this.callback.onNewData(this, info, data);
-                }
-            }
-        } catch (Exception e) {
-            this.socket = null;
-            this.callback.onFail(this, e);
-            this.interrupt();
-        }
-    }
-
     public void send(byte[] info, byte[] data) throws IOException {
         this.socket.getOutputStream().write(info);
         this.socket.getOutputStream().write(data);
         this.socket.getOutputStream().flush();
     }
 
+    public void send(byte info, byte[] data) throws IOException {
+        this.socket.getOutputStream().write(info);
+        this.socket.getOutputStream().write(data);
+        this.socket.getOutputStream().flush();
+    }
+
+    public void send(byte[] data) throws IOException {
+        this.socket.getOutputStream().write(data);
+        this.socket.getOutputStream().flush();
+    }
+
+    public static byte[][] extractFirstBytes(int amountOfBytesToExtract, byte[] data){
+        byte[][] returnVal = new byte[2][];
+        byte[] first = new byte[amountOfBytesToExtract];
+        System.arraycopy(data, 0, first, 0, first.length);
+        returnVal[0] = first;
+        byte[] remainingData = new byte[data.length - first.length];
+        System.arraycopy(data, first.length, remainingData, 0, remainingData.length);
+        returnVal[1] = remainingData;
+        return returnVal;
+    }
+
     public interface SmartSocketCallback {
-        void onFail(SmartSocket socket, Exception e);
+        public void onFail(SmartSocket socket, Exception e);
 
-        void onInitSuccess(SmartSocket socket);
+        public void onInitSuccess(SmartSocket socket);
 
-        void onNewData(SmartSocket socket, byte[] info, byte[] data);
+        public void onNewData(SmartSocket socket, byte[] data);
     }
 }
