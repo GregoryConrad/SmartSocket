@@ -2,26 +2,49 @@
 Probably the easiest way to use sockets in java. Designed for simplicity and speed.
 
 
-# Basic Usage (More Details Coming Soon)
+# Basic Usage
+**Client**
 ```
-SmartSocket smartSocket = new SmartSocket("example.com", 1234, new SmartSocket.SmartSocketCallback() {
-    // Note: in the following methods, the parameter socket is a reference to the current SmartSocket, in case you might want it
-    public void onInitSuccess(SmartSocket socket) {
-        // What to do when the socket has been initialized
-        // This is only called when passing the ip and port in the constructor
-        // This is never called when you pass a pre-made socket to the constructor
-        socket.send(new byte[]{"Connection initialized".getBytes("UTF-8")}); // Change this with your code
-    }
-    
-    public void onFail(SmartSocket socket, Exception e) {
-        // What to do when the socket stops working/encounters an error
-        // The exception is stored in the parameter e
-        socket.suicide(); // Optional but advised
-    }
-    
-    public void onNewData(SmartSocket socket, byte[] data) {
-        // What to do when new data is received
-        // Data is contained in data
-    }
-});
+SmartSocket socket = new SmartSocket("example.com", 1234, new SmartSocket.SmartSocketCallback() {
+			
+			@Override
+			public void onNewData(SmartSocket socket, byte[] data) {
+                // What to do when new data is received
+                // "socket" is a reference to the SmartSocket
+                // "data" is the data that was received
+
+                // Sample code:
+				try {
+					System.out.println("New data: " + new String(data, "UTF-8"));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+			@Override
+			public void onInitSuccess(SmartSocket socket) {
+                // What to do when the SmartSocket was initialized successfully
+                // "socket" is a reference to the SmartSocket
+
+                // Sample code:
+				try {
+					socket.send("Hello from the client!".getBytes("UTF-8"));
+					System.out.println("Sent data");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+			@Override
+			public void onFail(SmartSocket socket, Exception e) {
+                // What to do when the socket stops working/encounters an error
+                // If this is called, the SmartSocket is in an unusable state
+                // "socket" is a reference to the SmartSocket
+                // "e" is the Exception
+                
+                //Sample code:
+                e.printStackTrace();
+                socket.suicide(); // Optional but advised to be the last line of code
+			}
+		});
 ```
