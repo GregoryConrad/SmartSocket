@@ -44,7 +44,6 @@ SmartSocket socket = new SmartSocket("example.com", 1234, new SmartSocket.SmartS
                 
                 //Sample code:
                 e.printStackTrace();
-                socket.suicide(); // Optional but advised to be the last line of code
 			}
 		});
 ```
