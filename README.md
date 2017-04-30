@@ -1,8 +1,10 @@
 # SmartSocket
 Probably the easiest way to use sockets in java. Designed for simplicity and speed.
 
+More usage details will come shortly
 
 # Basic Usage
+_See SmartClientDemo.java and SmartServerDemo.java for a complete working demo_
 **On a client**
 ```
 SmartSocket socket = new SmartSocket("example.com", 1234, new SmartSocket.SmartSocketCallback() {
