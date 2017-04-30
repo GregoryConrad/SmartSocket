@@ -1,6 +1,6 @@
 import java.net.ServerSocket;
 
-public class SmartServer {
+public class SmartServerDemo {
 	public static void main(String[] args) {
 		try {
 			ServerSocket server = new ServerSocket(6789);
