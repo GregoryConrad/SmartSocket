@@ -42,7 +42,7 @@ public class SmartSocket extends Thread {
                 while (socket.getInputStream().available() > 0) {
                     byte[] tempHolder = new byte[BLOCK];
                     int bytesRead = socket.getInputStream().read(tempHolder);
-                    if (bytesRead < 0) throw new Exception("Connection closed: " + bytesRead);
+                    if (bytesRead < 0) throw new Exception("Connection closed");
 
                     byte[] tempCopy = new byte[data.length + bytesRead];
                     System.arraycopy(data, 0, tempCopy, 0, data.length);
