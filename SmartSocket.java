@@ -28,8 +28,8 @@ public class SmartSocket extends Thread {
         try {
             if (this.ip != null) {
                 this.socket = new Socket(this.ip, this.port);
-                this.callback.onInitSuccess(this);
             }
+            if (socket != null) this.callback.onInitSuccess(this);
             while (socket != null) {
                 byte[] data = new byte[1];
 
