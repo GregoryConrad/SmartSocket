@@ -54,7 +54,7 @@ public class SmartSocket extends Thread {
 
                 this.callback.onNewData(this, data);
             }
-            throw new Exception ("Socket was destroyed");
+            throw new Exception ("Socket is null");
         } catch (Exception e) {
             this.suicide();
             this.callback.onFail(this, e);
