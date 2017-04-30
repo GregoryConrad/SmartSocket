@@ -4,9 +4,10 @@ Probably the easiest way to use sockets in java. Designed for simplicity and spe
 Main selling points:
 - Reads all available bytes of a socket
 - Provides an easy way to interact with the socket and send data
-- Requires no exteranl libraries
+- Requires no external libraries
 - Small size (just more than 100 lines of code!)
 - Lightweight
+- Fast
 
 More usage details will come shortly
 
