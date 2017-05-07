@@ -71,21 +71,24 @@ public class SmartSocket extends Thread {
         this.interrupt();
     }
 
-    public void send(byte[] info, byte[] data) throws IOException {
-        this.socket.getOutputStream().write(info);
-        this.socket.getOutputStream().write(data);
-        this.socket.getOutputStream().flush();
-    }
-
-    public void send(byte info, byte[] data) throws IOException {
-        this.socket.getOutputStream().write(info);
-        this.socket.getOutputStream().write(data);
-        this.socket.getOutputStream().flush();
-    }
-
     public void send(byte[] data) throws IOException {
         this.socket.getOutputStream().write(data);
         this.socket.getOutputStream().flush();
+    }
+    
+    public void send(byte[] info, byte[] data) throws IOException {
+        this.send(combineBytes(info, data));
+    }
+
+    public void send(byte info, byte[] data) throws IOException {
+        this.send(combineBytes(new byte[]{info}, data));
+    }
+
+    public static byte[] combineBytes(byte[] arg1, byte[] arg2) {
+        byte[] returnVal = new byte[arg1.length + arg2.length];
+        System.arraycopy(arg1, 0, returnVal, 0, arg1.length);
+        System.arraycopy(arg2, 0, returnVal, arg1.length, arg2.length);
+        return returnVal;
     }
 
     public static byte[][] extractFirstBytes(int amountOfBytesToExtract, byte[] data){
@@ -100,10 +103,10 @@ public class SmartSocket extends Thread {
     }
 
     public interface SmartSocketCallback {
-        public void onFail(SmartSocket socket, Exception e);
+        void onFail(SmartSocket socket, Exception e);
 
-        public void onInitSuccess(SmartSocket socket);
+        void onInitSuccess(SmartSocket socket);
 
-        public void onNewData(SmartSocket socket, byte[] data);
+        void onNewData(SmartSocket socket, byte[] data);
     }
 }
