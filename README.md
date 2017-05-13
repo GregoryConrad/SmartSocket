@@ -9,8 +9,6 @@ Main selling points:
 - Lightweight
 - Fast
 
-More usage details will come shortly
-
 # Basic Usage
 _See SmartClientDemo.java and SmartServerDemo.java for a complete working demo_  
 **On a client**
